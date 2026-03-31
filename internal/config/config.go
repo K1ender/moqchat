@@ -11,10 +11,10 @@ const (
 
 type Config struct {
 	Env Env
-	Tls Tls
+	TLS TLS
 }
 
-type Tls struct {
+type TLS struct {
 	CertPath string `env:"TLS_CERTIFICATE"`
 	KeyPath  string `env:"TLS_KEY"`
 }

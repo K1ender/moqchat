@@ -1,0 +1,20 @@
+version: "2"
+
+linters:
+  default: all
+  disable:
+    - wsl
+    - depguard
+  settings:
+    wsl_v5:
+      allow-first-in-block: true
+      allow-whole-block: false
+      branch-max-lines: 2
+    revive:
+      enable-all-rules: true
+      enable-default-rules: true
+      rules:
+        - name: package-comments
+          disabled: true
+        - name: exported
+          disabled: true
