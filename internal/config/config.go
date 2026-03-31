@@ -10,13 +10,13 @@ const (
 )
 
 type Config struct {
-	Env Env
+	Env Env `env:"ENV" env-default:"production"`
 	TLS TLS
 }
 
 type TLS struct {
-	CertPath string `env:"TLS_CERTIFICATE"`
-	KeyPath  string `env:"TLS_KEY"`
+	CertPath string `env:"TLS_CERTIFICATE" env-required:"true"`
+	KeyPath  string `env:"TLS_KEY" env-required:"true"`
 }
 
 func MustInit() *Config {
