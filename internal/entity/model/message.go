@@ -1,4 +1,4 @@
-package entity
+package model
 
 import "github.com/google/uuid"
 
@@ -10,9 +10,9 @@ const (
 )
 
 type Message struct {
-	id      uuid.UUID
-	typ     MessageType
-	from    uuid.UUID
-	to      uuid.UUID
-	content string
+	ID      uuid.UUID
+	Type    MessageType
+	From    uuid.UUID
+	To      uuid.UUID
+	Content string
 }

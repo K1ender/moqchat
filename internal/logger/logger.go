@@ -33,6 +33,8 @@ func New(env config.Env) *slog.Logger {
 		}.NewZapHandler()
 
 		logger = slog.New(handler)
+	default:
+		logger = slog.Default()
 	}
 
 	slog.SetDefault(logger)
@@ -48,9 +50,15 @@ type loggerkey struct{}
 
 func WithContext(ctx context.Context, logger *slog.Logger) context.Context {
 	ctx = context.WithValue(ctx, loggerkey{}, logger)
+
 	return ctx
 }
 
 func FromContext(ctx context.Context) *slog.Logger {
-	return ctx.Value(loggerkey{}).(*slog.Logger)
+	logger, ok := ctx.Value(loggerkey{}).(*slog.Logger)
+	if !ok {
+		return slog.Default()
+	}
+
+	return logger
 }

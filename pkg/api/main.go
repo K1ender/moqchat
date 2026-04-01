@@ -12,7 +12,7 @@ func Run(ctx context.Context) error {
 	ctx = logger.WithContext(ctx, logger.New(cfg.Env))
 	log := logger.FromContext(ctx)
 
-	log.Info("Starting API...")
+	log.InfoContext(ctx, "Starting API...")
 
 	return nil
 }
