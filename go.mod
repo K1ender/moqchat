@@ -3,6 +3,7 @@ module github.com/K1ender/moqchat
 go 1.26.1
 
 require (
+	github.com/google/uuid v1.6.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/samber/slog-zap/v2 v2.6.4
 	go.uber.org/zap v1.27.1
