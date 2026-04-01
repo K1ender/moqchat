@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS groups (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
     created_by UUID NOT NULL REFERENCES users (id),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -46,6 +46,12 @@ CREATE TABLE IF NOT EXISTS messages (
         (type = 'group' AND group_id IS NOT NULL AND user_id IS NULL)
     )
 );
+
+CREATE INDEX idx_messages_user_id_created_at
+ON messages (user_id, created_at DESC);
+
+CREATE INDEX idx_messages_group_id_created_at
+ON messages (group_id, created_at DESC);
 
 -- +goose Down
 DROP TABLE IF EXISTS user_groups;

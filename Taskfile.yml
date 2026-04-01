@@ -29,3 +29,11 @@ tasks:
       GOOSE_DRIVER: postgres
     cmds:
       - goose up
+  down-migration:
+    desc: Down migration
+    env:
+      GOOSE_DBSTRING: postgres://{{.DATABASE_USER}}:{{.DATABASE_PASSWORD}}@{{.DATABASE_HOST}}:{{.DATABASE_PORT}}/{{.DATABASE_NAME}}
+      GOOSE_MIGRATION_DIR: "{{ .GOOSE_MIGRATION_DIR }}"
+      GOOSE_DRIVER: postgres
+    cmds:
+      - goose down
