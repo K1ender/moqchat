@@ -2,6 +2,12 @@
 
 version: "3"
 
+env:
+  GOOSE_MIGRATION_DIR: migrations
+
+dotenv:
+  - .env
+
 tasks:
   default:
     desc: Run api
@@ -11,3 +17,15 @@ tasks:
     desc: Lint project
     cmds:
       - golangci-lint run ./...
+  create-migration:
+    desc: Create migration
+    cmds:
+      - goose -dir $GOOSE_MIGRATION_DIR create {{.CLI_ARGS}} sql
+  up-migration:
+    desc: Run migration
+    env:
+      GOOSE_DBSTRING: postgres://{{.DATABASE_USER}}:{{.DATABASE_PASSWORD}}@{{.DATABASE_HOST}}:{{.DATABASE_PORT}}/{{.DATABASE_NAME}}
+      GOOSE_MIGRATION_DIR: "{{ .GOOSE_MIGRATION_DIR }}"
+      GOOSE_DRIVER: postgres
+    cmds:
+      - goose up
