@@ -87,7 +87,14 @@ func (s *SessionPostgres) FindSessionByToken(ctx context.Context, token string) 
 	query := `SELECT id, user_id, token, expires_at, created_at FROM sessions WHERE token = $1`
 
 	var session model.Session
-	err = tx.QueryRow(ctx, query, token).Scan(&session.ID, &session.UserID, &session.Token, &session.ExpiresAt, &session.CreatedAt)
+	err = tx.QueryRow(ctx, query, token).
+		Scan(
+			&session.ID,
+			&session.UserID,
+			&session.Token,
+			&session.ExpiresAt,
+			&session.CreatedAt,
+		)
 	if err != nil {
 		return model.Session{}, fmt.Errorf("failed to find session: %w", err)
 	}
@@ -100,7 +107,7 @@ func (s *SessionPostgres) FindSessionByToken(ctx context.Context, token string) 
 	return session, nil
 }
 
-// UpdateSession implements [Session].
+// UpdateExpiresAt implements [Session].
 func (s *SessionPostgres) UpdateExpiresAt(ctx context.Context, id uuid.UUID, expiresAt time.Time) error {
 	tx, err := s.conn.Begin(ctx)
 	if err != nil {
@@ -136,7 +143,8 @@ func (s *SessionPostgres) FindSessionByID(ctx context.Context, id uuid.UUID) (mo
 	query := `SELECT id, user_id, token, expires_at, created_at FROM sessions WHERE id = $1`
 
 	var session model.Session
-	err = tx.QueryRow(ctx, query, id).Scan(&session.ID, &session.UserID, &session.Token, &session.ExpiresAt, &session.CreatedAt)
+	err = tx.QueryRow(ctx, query, id).
+		Scan(&session.ID, &session.UserID, &session.Token, &session.ExpiresAt, &session.CreatedAt)
 	if err != nil {
 		return model.Session{}, fmt.Errorf("failed to find session: %w", err)
 	}

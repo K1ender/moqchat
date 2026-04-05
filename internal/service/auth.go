@@ -16,6 +16,7 @@ import (
 const (
 	SessionDuration     = 30 * 24 * time.Hour
 	HalfSessionDuration = SessionDuration / 2
+	RandomStringLength  = 32
 )
 
 type Auth interface {
@@ -38,7 +39,7 @@ func NewAuthUsecase(userRepo repository.User, sessionRepo repository.Session) Au
 
 // CreateSession implements [Auth].
 func (a *AuthUsecase) CreateSession(ctx context.Context, userID uuid.UUID) (string, error) {
-	token, err := cryptoRandomString(32)
+	token, err := cryptoRandomString(RandomStringLength)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate token: %w", err)
 	}
@@ -47,7 +48,7 @@ func (a *AuthUsecase) CreateSession(ctx context.Context, userID uuid.UUID) (stri
 	tokenHash := hex.EncodeToString(hashedToken[:])
 
 	session := model.Session{UserID: userID, Token: tokenHash, ExpiresAt: SessionDuration}
-	_, err = a.sessionRepo.CreateSession(context.Background(), session)
+	_, err = a.sessionRepo.CreateSession(ctx, session)
 	if err != nil {
 		return "", fmt.Errorf("failed to create session: %w", err)
 	}
@@ -65,7 +66,7 @@ func (a *AuthUsecase) ExtendSession(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-// GetToken implements [Auth].
+// GetSession implements [Auth].
 func (a *AuthUsecase) GetSession(ctx context.Context, id uuid.UUID) (model.Session, error) {
 	session, err := a.sessionRepo.FindSessionByID(ctx, id)
 	if err != nil {
@@ -80,7 +81,7 @@ func (a *AuthUsecase) Login(ctx context.Context, email string, password string) 
 	panic("unimplemented")
 }
 
-// VerifyToken implements [Auth].
+// GetUserIDFromToken implements [Auth].
 func (a *AuthUsecase) GetUserIDFromToken(ctx context.Context, token string) (uuid.UUID, error) {
 	session, err := a.sessionRepo.FindSessionByToken(ctx, token)
 	if err != nil {
