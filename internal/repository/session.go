@@ -13,8 +13,9 @@ import (
 type Session interface {
 	FindSessionByToken(ctx context.Context, token string) (model.Session, error)
 	CreateSession(ctx context.Context, session model.Session) (uuid.UUID, error)
-	DeleteSession(ctx context.Context, token string) error
-	UpdateExpiresAt(ctx context.Context, token string, expiresAt time.Time) error
+	DeleteSession(ctx context.Context, id uuid.UUID) error
+	UpdateExpiresAt(ctx context.Context, id uuid.UUID, expiresAt time.Time) error
+	FindSessionByID(ctx context.Context, id uuid.UUID) (model.Session, error)
 }
 
 type SessionPostgres struct {
@@ -51,7 +52,7 @@ func (s *SessionPostgres) CreateSession(ctx context.Context, session model.Sessi
 }
 
 // DeleteSession implements [Session].
-func (s *SessionPostgres) DeleteSession(ctx context.Context, token string) error {
+func (s *SessionPostgres) DeleteSession(ctx context.Context, id uuid.UUID) error {
 	tx, err := s.conn.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
@@ -59,9 +60,9 @@ func (s *SessionPostgres) DeleteSession(ctx context.Context, token string) error
 
 	defer tx.Rollback(ctx)
 
-	query := `DELETE FROM sessions WHERE token = $1`
+	query := `DELETE FROM sessions WHERE id = $1`
 
-	_, err = tx.Exec(ctx, query, token)
+	_, err = tx.Exec(ctx, query, id)
 	if err != nil {
 		return fmt.Errorf("failed to delete session: %w", err)
 	}
@@ -100,7 +101,7 @@ func (s *SessionPostgres) FindSessionByToken(ctx context.Context, token string) 
 }
 
 // UpdateSession implements [Session].
-func (s *SessionPostgres) UpdateExpiresAt(ctx context.Context, token string, expiresAt time.Time) error {
+func (s *SessionPostgres) UpdateExpiresAt(ctx context.Context, id uuid.UUID, expiresAt time.Time) error {
 	tx, err := s.conn.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
@@ -108,9 +109,9 @@ func (s *SessionPostgres) UpdateExpiresAt(ctx context.Context, token string, exp
 
 	defer tx.Rollback(ctx)
 
-	query := `UPDATE sessions SET expires_at = $1 WHERE token = $2`
+	query := `UPDATE sessions SET expires_at = $1 WHERE id = $2`
 
-	_, err = tx.Exec(ctx, query, expiresAt, token)
+	_, err = tx.Exec(ctx, query, expiresAt, id)
 	if err != nil {
 		return fmt.Errorf("failed to update session: %w", err)
 	}
@@ -121,4 +122,29 @@ func (s *SessionPostgres) UpdateExpiresAt(ctx context.Context, token string, exp
 	}
 
 	return nil
+}
+
+// FindSessionByID implements [Session].
+func (s *SessionPostgres) FindSessionByID(ctx context.Context, id uuid.UUID) (model.Session, error) {
+	tx, err := s.conn.Begin(ctx)
+	if err != nil {
+		return model.Session{}, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	defer tx.Rollback(ctx)
+
+	query := `SELECT id, user_id, token, expires_at, created_at FROM sessions WHERE id = $1`
+
+	var session model.Session
+	err = tx.QueryRow(ctx, query, id).Scan(&session.ID, &session.UserID, &session.Token, &session.ExpiresAt, &session.CreatedAt)
+	if err != nil {
+		return model.Session{}, fmt.Errorf("failed to find session: %w", err)
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return model.Session{}, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return session, nil
 }
