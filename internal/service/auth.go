@@ -11,6 +11,7 @@ import (
 	"github.com/K1ender/moqchat/internal/entity/model"
 	"github.com/K1ender/moqchat/internal/repository"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const (
@@ -20,7 +21,8 @@ const (
 )
 
 type Auth interface {
-	Login(ctx context.Context, email string, password string) (string, error)
+	Login(ctx context.Context, email string, password string) (uuid.UUID, error)
+	Register(ctx context.Context, username string, email string, password string) (uuid.UUID, error)
 
 	CreateSession(ctx context.Context, userID uuid.UUID) (string, error)
 	GetUserIDFromToken(ctx context.Context, token string) (uuid.UUID, error)
@@ -76,13 +78,42 @@ func (a *AuthUsecase) GetSession(ctx context.Context, id uuid.UUID) (model.Sessi
 }
 
 // Login implements [Auth].
-func (a *AuthUsecase) Login(ctx context.Context, email string, password string) (string, error) {
-	panic("unimplemented")
+// TODO: decide whether Login should create a session
+// keeping it here simplifies API, but separating gives more control (e.g. stateless auth, different session strategies)
+func (a *AuthUsecase) Login(ctx context.Context, email string, password string) (uuid.UUID, error) {
+	user, err := a.userRepo.FindUserByEmail(ctx, email)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("failed to find user: %w", err)
+	}
+
+	if comparePassword(user.Password, []byte(password)) != nil {
+		return uuid.Nil, fmt.Errorf("invalid password")
+	}
+
+	return user.ID, nil
+}
+
+// Register implements [Auth].
+// TODO: decide whether Register should create a session
+func (a *AuthUsecase) Register(ctx context.Context, username string, email string, password string) (uuid.UUID, error) {
+	passwordHash, err := hashPassword([]byte(password))
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("failed to hash password: %w", err)
+	}
+
+	user := model.User{Username: username, Email: email, Password: passwordHash}
+	id, err := a.userRepo.CreateUser(ctx, user)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("failed to create user: %w", err)
+	}
+
+	return id, nil
 }
 
 // GetUserIDFromToken implements [Auth].
 func (a *AuthUsecase) GetUserIDFromToken(ctx context.Context, token string) (uuid.UUID, error) {
 	tokenHash := hashToken([]byte(token))
+
 	session, err := a.sessionRepo.FindSessionByToken(ctx, tokenHash)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("failed to get session: %w", err)
@@ -105,4 +136,17 @@ func hashToken(token []byte) string {
 	hashedToken := sha256.Sum256([]byte(token))
 	tokenHash := hex.EncodeToString(hashedToken[:])
 	return tokenHash
+}
+
+func hashPassword(password []byte) ([]byte, error) {
+	hash, err := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
+	if err != nil {
+		return nil, fmt.Errorf("failed to hash password: %w", err)
+	}
+
+	return hash, nil
+}
+
+func comparePassword(hashedPassword, password []byte) error {
+	return bcrypt.CompareHashAndPassword(hashedPassword, password)
 }
