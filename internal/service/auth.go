@@ -44,10 +44,9 @@ func (a *AuthUsecase) CreateSession(ctx context.Context, userID uuid.UUID) (stri
 		return "", fmt.Errorf("failed to generate token: %w", err)
 	}
 
-	hashedToken := sha256.Sum256([]byte(token))
-	tokenHash := hex.EncodeToString(hashedToken[:])
+	tokenHash := hashToken([]byte(token))
 
-	session := model.Session{UserID: userID, Token: tokenHash, ExpiresAt: SessionDuration}
+	session := model.Session{UserID: userID, Token: tokenHash, ExpiresAt: time.Now().Add(SessionDuration)}
 	_, err = a.sessionRepo.CreateSession(ctx, session)
 	if err != nil {
 		return "", fmt.Errorf("failed to create session: %w", err)
@@ -99,4 +98,10 @@ func cryptoRandomString(length int) (string, error) {
 	}
 
 	return hex.EncodeToString(bytes), nil
+}
+
+func hashToken(token []byte) string {
+	hashedToken := sha256.Sum256([]byte(token))
+	tokenHash := hex.EncodeToString(hashedToken[:])
+	return tokenHash
 }
