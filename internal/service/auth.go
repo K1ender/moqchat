@@ -82,7 +82,8 @@ func (a *AuthUsecase) Login(ctx context.Context, email string, password string) 
 
 // GetUserIDFromToken implements [Auth].
 func (a *AuthUsecase) GetUserIDFromToken(ctx context.Context, token string) (uuid.UUID, error) {
-	session, err := a.sessionRepo.FindSessionByToken(ctx, token)
+	tokenHash := hashToken([]byte(token))
+	session, err := a.sessionRepo.FindSessionByToken(ctx, tokenHash)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("failed to get session: %w", err)
 	}
