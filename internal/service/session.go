@@ -33,7 +33,7 @@ var (
 	ErrSessionExpired = errors.New("session expired")
 )
 
-// CreateSession implements [Session].
+// Create implements [Session].
 func (s *SessionUsecase) Create(ctx context.Context, userID uuid.UUID) (string, error) {
 	token, err := cryptoRandomString(RandomStringLength)
 	if err != nil {
@@ -103,7 +103,7 @@ func cryptoRandomString(length int) (string, error) {
 }
 
 func hashToken(token []byte) string {
-	hashedToken := sha256.Sum256([]byte(token))
+	hashedToken := sha256.Sum256(token)
 	tokenHash := hex.EncodeToString(hashedToken[:])
 	return tokenHash
 }

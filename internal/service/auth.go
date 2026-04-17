@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -17,13 +18,17 @@ const (
 	RandomStringLength  = 32
 )
 
+var (
+	ErrWrongPassword = errors.New("wrong password")
+)
+
 type Auth interface {
 	Login(ctx context.Context, email string, password string) (uuid.UUID, error)
 	Register(ctx context.Context, username string, email string, password string) (uuid.UUID, error)
 }
 
 type AuthUsecase struct {
-	userRepo    repository.User
+	userRepo repository.User
 }
 
 func NewAuthUsecase(userRepo repository.User) Auth {
@@ -38,7 +43,7 @@ func (a *AuthUsecase) Login(ctx context.Context, email string, password string) 
 	}
 
 	if comparePassword(user.Password, []byte(password)) != nil {
-		return uuid.Nil, fmt.Errorf("invalid password")
+		return uuid.Nil, ErrWrongPassword
 	}
 
 	return user.ID, nil
