@@ -4,18 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/K1ender/moqchat/internal/entity/model"
 	"github.com/K1ender/moqchat/internal/repository"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
-)
-
-const (
-	SessionDuration     = 30 * 24 * time.Hour
-	HalfSessionDuration = SessionDuration / 2
-	RandomStringLength  = 32
 )
 
 var (

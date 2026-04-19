@@ -14,6 +14,12 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	SessionDuration     = 30 * 24 * time.Hour
+	HalfSessionDuration = SessionDuration / 2
+	RandomStringLength  = 32
+)
+
 type Session interface {
 	Create(ctx context.Context, userID uuid.UUID) (string, error)
 	GetUserIDFromToken(ctx context.Context, token string) (uuid.UUID, error)
