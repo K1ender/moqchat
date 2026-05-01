@@ -10,8 +10,9 @@ const (
 )
 
 type Config struct {
-	Env Env `env:"ENV" env-default:"production"`
-	TLS TLS
+	Env  Env `env:"ENV" env-default:"production"`
+	TLS  TLS
+	HTTP HTTPConfig
 }
 
 type TLS struct {
@@ -25,6 +26,11 @@ type Database struct {
 	User string `env:"DATABASE_USER"     env-required:"true"`
 	Pass string `env:"DATABASE_PASSWORD" env-required:"true"`
 	Name string `env:"DATABASE_NAME"     env-required:"true"`
+}
+
+type HTTPConfig struct {
+	Host string `env:"HTTP_HOST" env-default:"localhost"`
+	Port string `env:"HTTP_PORT"                         env-required:"true"`
 }
 
 func MustInit() *Config {

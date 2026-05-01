@@ -21,7 +21,7 @@ tasks:
     desc: Create migration
     cmds:
       - goose -dir $GOOSE_MIGRATION_DIR create {{.CLI_ARGS}} sql
-  up-migration:
+  migrate:
     desc: Run migration
     env:
       GOOSE_DBSTRING: postgres://{{.DATABASE_USER}}:{{.DATABASE_PASSWORD}}@{{.DATABASE_HOST}}:{{.DATABASE_PORT}}/{{.DATABASE_NAME}}
@@ -29,7 +29,7 @@ tasks:
       GOOSE_DRIVER: postgres
     cmds:
       - goose up
-  down-migration:
+  migrate-down:
     desc: Down migration
     env:
       GOOSE_DBSTRING: postgres://{{.DATABASE_USER}}:{{.DATABASE_PASSWORD}}@{{.DATABASE_HOST}}:{{.DATABASE_PORT}}/{{.DATABASE_NAME}}

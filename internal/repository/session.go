@@ -33,7 +33,7 @@ func (s *SessionPostgres) CreateSession(ctx context.Context, session model.Sessi
 		return uuid.Nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer tx.Rollback(ctx)
+	defer safeRollback(ctx, tx)
 
 	query := `INSERT INTO sessions(user_id, token, expires_at) VALUES ($1, $2, $3) RETURNING id`
 
@@ -58,7 +58,7 @@ func (s *SessionPostgres) DeleteSession(ctx context.Context, id uuid.UUID) error
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer tx.Rollback(ctx)
+	defer safeRollback(ctx, tx)
 
 	query := `DELETE FROM sessions WHERE id = $1`
 
@@ -82,7 +82,7 @@ func (s *SessionPostgres) FindSessionByToken(ctx context.Context, token string) 
 		return model.Session{}, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer tx.Rollback(ctx)
+	defer safeRollback(ctx, tx)
 
 	query := `SELECT id, user_id, token, expires_at, created_at FROM sessions WHERE token = $1`
 
@@ -114,7 +114,7 @@ func (s *SessionPostgres) UpdateExpiresAt(ctx context.Context, id uuid.UUID, exp
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer tx.Rollback(ctx)
+	defer safeRollback(ctx, tx)
 
 	query := `UPDATE sessions SET expires_at = $1 WHERE id = $2`
 
@@ -138,7 +138,7 @@ func (s *SessionPostgres) FindSessionByID(ctx context.Context, id uuid.UUID) (mo
 		return model.Session{}, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer tx.Rollback(ctx)
+	defer safeRollback(ctx, tx)
 
 	query := `SELECT id, user_id, token, expires_at, created_at FROM sessions WHERE id = $1`
 

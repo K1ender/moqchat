@@ -18,7 +18,7 @@ type UserPostgres struct {
 	conn *pgxpool.Pool
 }
 
-func NewUserPostges(conn *pgxpool.Pool) User {
+func NewUserPostgres(conn *pgxpool.Pool) User {
 	return &UserPostgres{
 		conn: conn,
 	}
@@ -31,7 +31,7 @@ func (r *UserPostgres) CreateUser(ctx context.Context, user model.User) (uuid.UU
 		return uuid.Nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer tx.Rollback(ctx)
+	defer safeRollback(ctx, tx)
 
 	query := `INSERT INTO users(username, email, password) VALUES ($1, $2, $3) RETURNING id`
 

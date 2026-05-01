@@ -6,8 +6,8 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/jackc/pgx/v5 v5.9.2
-	github.com/samber/slog-zap/v2 v2.6.4
-	go.uber.org/zap v1.27.1
+	github.com/samber/slog-zap/v2 v2.7.0
+	go.uber.org/zap v1.28.0
 	golang.org/x/crypto v0.50.0
 )
 
